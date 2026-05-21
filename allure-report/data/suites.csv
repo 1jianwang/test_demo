@@ -1,0 +1,8 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"","102","TC_021 全部为空点击Continue","ui_test","2026-05-20","passed","2026-05-20","","test_checkout","",""
+"","170","TC_023 姓氏为空","ui_test","2026-05-20","passed","2026-05-20","","test_checkout","",""
+"","203","TC_022 名字为空","ui_test","2026-05-20","passed","2026-05-20","","test_checkout","",""
+"","268","TC_020 正常下单全流程","ui_test","2026-05-20","passed","2026-05-20","","test_checkout","",""
+"","216","TC_024 邮编为空","ui_test","2026-05-20","passed","2026-05-20","","test_checkout","",""
+"","79","TC_027 点击Cancel返回购物车","ui_test","2026-05-20","passed","2026-05-20","","test_checkout","",""
+"","197","TC_026 邮编填字母-系统未校验格式(Bug)","ui_test","2026-05-20","passed","2026-05-20","","test_checkout","",""
