@@ -1,1 +1,0 @@
-~\scoop\apps\allure\current\bin\allure.bat serve C:\Users\Desktop\saucedemo_test\report

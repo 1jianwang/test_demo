@@ -4,3 +4,4 @@ allure-results/
 allure-report/
 report/
 .pytest_cache/
+allure.txt
