@@ -89,9 +89,19 @@ def checkout_driver(logged_in_driver):
     """结算页 fixture：完成加入购物车并进入结算页"""
     wait = WebDriverWait(logged_in_driver, 30)
 
+    # 等待加入购物车按钮出现再点击
+    wait.until(EC.element_to_be_clickable((By.ID, "add-to-cart-sauce-labs-backpack")))
     logged_in_driver.find_element(By.ID, "add-to-cart-sauce-labs-backpack").click()
+
+    # 等待购物车角标出现，确认加入成功
+    wait.until(EC.presence_of_element_located((By.CLASS_NAME, "shopping_cart_badge")))
     logged_in_driver.find_element(By.CLASS_NAME, "shopping_cart_link").click()
-    wait.until(EC.presence_of_element_located((By.ID, "checkout")))
+
+    # 等待购物车页面加载完成
+    wait.until(EC.presence_of_element_located((By.CLASS_NAME, "cart_list")))
+    wait.until(EC.element_to_be_clickable((By.ID, "checkout")))
     logged_in_driver.find_element(By.ID, "checkout").click()
+
+    # 等待结算页加载完成
     wait.until(EC.presence_of_element_located((By.ID, "first-name")))
     yield logged_in_driver
