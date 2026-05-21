@@ -21,7 +21,7 @@ jobs:
 
       - name: 安装依赖
         run: |
-          pip install pytest requests allure-pytest
+          pip install pytest requests allure-pytest selenium
 
       - name: 运行接口测试
         run: |
