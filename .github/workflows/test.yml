@@ -9,7 +9,6 @@ on:
 jobs:
   api-test:
     runs-on: ubuntu-latest
-
     steps:
       - name: 拉取代码
         uses: actions/checkout@v3
@@ -31,5 +30,34 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: allure-results
+          name: allure-results-api
           path: allure-results/
+
+  ui-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v3
+
+      - name: 安装 Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: 安装 Chrome 浏览器
+        uses: browser-actions/setup-chrome@v1
+
+      - name: 安装依赖
+        run: |
+          pip install pytest requests allure-pytest selenium
+
+      - name: 运行 UI 测试
+        run: |
+          pytest ui_test/ --alluredir=allure-results-ui
+
+      - name: 上传测试结果
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: allure-results-ui
+          path: allure-results-ui/

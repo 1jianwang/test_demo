@@ -34,16 +34,20 @@ def api():
 
 @pytest.fixture
 def driver():
-    """UI 基础 fixture：打开浏览器并访问登录页"""
     options = Options()
     options.add_experimental_option("prefs", {
         "credentials_enable_service": False,
         "profile.password_manager_enabled": False
     })
-    driver = webdriver.Chrome(options=options)
-    driver.get(UI_URL)
-    yield driver
-    driver.quit()
+    # 云端 CI 环境
+    options.add_argument("--headless")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    
+    d = webdriver.Chrome(options=options)
+    d.get(UI_URL)
+    yield d
+    d.quit()
 
 @pytest.fixture
 def logged_in_driver(driver):
