@@ -133,9 +133,8 @@ def test_移除购物车商品(logged_in_driver):
         logged_in_driver.find_element(By.ID, "remove-sauce-labs-backpack").click()
 
     with allure.step("验证购物车角标消失"):
-        wait.until(EC.invisibility_of_element_located((By.CLASS_NAME, "shopping_cart_badge")))
         badges = logged_in_driver.find_elements(By.CLASS_NAME, "shopping_cart_badge")
-        assert len(badges) == 0
+    assert len(badges) == 0
 
 @allure.feature("商品模块")
 @allure.story("商品列表")

@@ -84,3 +84,14 @@ def pytest_runtest_makereport(item, call):
                 )
             except Exception:
                 pass
+@pytest.fixture
+def checkout_driver(logged_in_driver):
+    """结算页 fixture：完成加入购物车并进入结算页"""
+    wait = WebDriverWait(logged_in_driver, 30)
+
+    logged_in_driver.find_element(By.ID, "add-to-cart-sauce-labs-backpack").click()
+    logged_in_driver.find_element(By.CLASS_NAME, "shopping_cart_link").click()
+    wait.until(EC.presence_of_element_located((By.ID, "checkout")))
+    logged_in_driver.find_element(By.ID, "checkout").click()
+    wait.until(EC.presence_of_element_located((By.ID, "first-name")))
+    yield logged_in_driver

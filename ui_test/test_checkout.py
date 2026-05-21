@@ -4,25 +4,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-@pytest.fixture
-def checkout_driver(logged_in_driver):
-    """结算页 fixture：完成加入购物车并进入结算页"""
-    wait = WebDriverWait(logged_in_driver, 10)
-
-    # 加入购物车
-    logged_in_driver.find_element(By.ID, "add-to-cart-sauce-labs-backpack").click()
-
-    # 点击购物车图标
-    logged_in_driver.find_element(By.CLASS_NAME, "shopping_cart_link").click()
-
-    # 点击 Checkout 按钮
-    wait.until(EC.presence_of_element_located((By.ID, "checkout")))
-    logged_in_driver.find_element(By.ID, "checkout").click()
-
-    # 等待 first-name 输入框出现
-    wait.until(EC.presence_of_element_located((By.ID, "first-name")))
-
-    yield logged_in_driver
 
 @allure.feature("Checkout")
 @allure.story("正常下单")
