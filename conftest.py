@@ -1,36 +1,65 @@
-import pytest
-import allure
-import requests
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-import os, platform
+import os
+import platform
 
-#自动配置environment.properties 文件，供allure报告使用
+import allure
+import pytest
+import requests
+from requests.adapters import HTTPAdapter
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+from selenium.common.exceptions import WebDriverException
+from urllib3.util.retry import Retry
+
+from pages.cart_page import CartPage
+from pages.checkout_page import CheckoutPage
+from pages.login_page import LoginPage
+from pages.products_page import ProductsPage
+
+
+BASE_API_URL = os.getenv("BASE_API_URL", "https://jsonplaceholder.typicode.com")
+BASE_UI_URL = os.getenv("BASE_UI_URL", "https://www.saucedemo.com")
+HEADLESS = os.getenv("HEADLESS", "true").lower() in {"1", "true", "yes"}
+CHROME_DRIVER_PATH = os.getenv("CHROME_DRIVER_PATH")
+
+
+class ApiSession(requests.Session):
+    def request(self, method, url, **kwargs):
+        kwargs.setdefault("timeout", 10)
+        return super().request(method, url, **kwargs)
+
+
 def pytest_configure(config):
     os.makedirs("allure-results", exist_ok=True)
-    with open("allure-results/environment.properties", "w") as f:
+    with open("allure-results/environment.properties", "w", encoding="utf-8") as f:
         f.write(f"Browser=Chrome\n")
-        f.write(f"Base.URL=https://www.saucedemo.com\n")
-        f.write(f"API.URL=https://jsonplaceholder.typicode.com\n")
+        f.write(f"Base.UI.URL={BASE_UI_URL}\n")
+        f.write(f"Base.API.URL={BASE_API_URL}\n")
+        f.write(f"Headless={HEADLESS}\n")
+        f.write(f"Chrome.Driver.Path={CHROME_DRIVER_PATH or 'Selenium Manager'}\n")
         f.write(f"Environment=Test\n")
         f.write(f"Python.Version={platform.python_version()}\n")
-# 常量定义
-BASE_URL = "https://jsonplaceholder.typicode.com"
-UI_URL = "https://www.saucedemo.com"
+
 
 @pytest.fixture
 def api():
-    """接口测试 fixture：创建 requests.Session"""
-    session = requests.Session()
-    session.headers.update({
-        "Content-Type": "application/json"
-    })
-    session.base_url = BASE_URL
+    session = ApiSession()
+    session.headers.update({"Content-Type": "application/json"})
+    session.base_url = BASE_API_URL
+    retry = Retry(
+        total=3,
+        connect=3,
+        read=3,
+        backoff_factor=0.5,
+        status_forcelist=[429, 500, 502, 503, 504],
+        allowed_methods={"GET", "POST", "PUT", "DELETE"},
+    )
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
     yield session
     session.close()
+
 
 @pytest.fixture
 def driver():
@@ -39,34 +68,37 @@ def driver():
         "credentials_enable_service": False,
         "profile.password_manager_enabled": False
     })
-    # 云端 CI 环境
-    options.add_argument("--headless")
+    if HEADLESS:
+        options.add_argument("--headless=new")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
-    
-    d = webdriver.Chrome(options=options)
-    d.get(UI_URL)
+
+    try:
+        if CHROME_DRIVER_PATH:
+            d = webdriver.Chrome(service=Service(CHROME_DRIVER_PATH), options=options)
+        else:
+            d = webdriver.Chrome(options=options)
+    except WebDriverException as exc:
+        pytest.skip(f"Chrome WebDriver is not available in this environment: {exc.msg}")
+
+    d.get(BASE_UI_URL)
     yield d
     d.quit()
 
+
 @pytest.fixture
 def logged_in_driver(driver):
-    """已登录 fixture：完成登录操作"""
-    wait = WebDriverWait(driver, 10)
-    driver.find_element(By.ID, "user-name").send_keys("standard_user")
-    driver.find_element(By.ID, "password").send_keys("secret_sauce")
-    driver.find_element(By.ID, "login-button").click()
-    wait.until(EC.presence_of_element_located((By.CLASS_NAME, "inventory_list")))
+    LoginPage(driver).login("standard_user", "secret_sauce")
+    ProductsPage(driver).wait_loaded()
     yield driver
+
 
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
 def pytest_runtest_makereport(item, call):
-    """失败自动截图 hook"""
     outcome = yield
     report = outcome.get_result()
 
     if report.when == "call" and report.failed:
-        # 尝试从 funcargs 中获取 driver 或 logged_in_driver
         driver_fixture = None
         if "driver" in item.funcargs:
             driver_fixture = item.funcargs["driver"]
@@ -79,29 +111,16 @@ def pytest_runtest_makereport(item, call):
             try:
                 allure.attach(
                     driver_fixture.get_screenshot_as_png(),
-                    name="失败截图",
+                    name="failure_screenshot",
                     attachment_type=allure.attachment_type.PNG
                 )
             except Exception:
                 pass
+
+
 @pytest.fixture
 def checkout_driver(logged_in_driver):
-    """结算页 fixture：完成加入购物车并进入结算页"""
-    wait = WebDriverWait(logged_in_driver, 30)
-
-    # 等待加入购物车按钮出现再点击
-    wait.until(EC.element_to_be_clickable((By.ID, "add-to-cart-sauce-labs-backpack")))
-    logged_in_driver.find_element(By.ID, "add-to-cart-sauce-labs-backpack").click()
-
-    # 等待购物车角标出现，确认加入成功
-    wait.until(EC.presence_of_element_located((By.CLASS_NAME, "shopping_cart_badge")))
-    logged_in_driver.find_element(By.CLASS_NAME, "shopping_cart_link").click()
-
-    # 等待购物车页面加载完成
-    wait.until(EC.presence_of_element_located((By.CLASS_NAME, "cart_list")))
-    wait.until(EC.element_to_be_clickable((By.ID, "checkout")))
-    logged_in_driver.find_element(By.ID, "checkout").click()
-
-    # 等待结算页加载完成
-    wait.until(EC.presence_of_element_located((By.ID, "first-name")))
+    ProductsPage(logged_in_driver).add_backpack_to_cart().open_cart()
+    CartPage(logged_in_driver).wait_loaded().checkout()
+    CheckoutPage(logged_in_driver).wait_loaded()
     yield logged_in_driver
