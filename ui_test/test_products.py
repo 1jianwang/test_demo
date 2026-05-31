@@ -105,10 +105,18 @@ def test_移除购物车商品(logged_in_driver):
         products_page.add_backpack_to_cart().open_cart()
 
     with allure.step("移除购物车商品"):
-        CartPage(logged_in_driver).wait_loaded().remove_backpack()
+        cart_page = CartPage(logged_in_driver)
+        cart_page.wait_loaded().remove_backpack()
 
-    with allure.step("验证购物车角标消失"):
-        assert products_page.cart_badge_count() == 0
+    with allure.step("验证购物车中商品已移除"):
+        # 在购物车页面验证商品数量
+        assert cart_page.item_count() == 0, "购物车应该为空"
+
+    with allure.step("返回商品列表验证角标消失"):
+        # 返回商品列表页面检查角标
+        logged_in_driver.get(logged_in_driver.current_url.replace("cart.html", "inventory.html"))
+        products_page.wait_loaded()
+        assert products_page.cart_badge_count() == 0, "购物车角标应该消失"
 
 
 @allure.feature("商品模块")

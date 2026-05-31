@@ -26,13 +26,21 @@ class CheckoutPage(BasePage):
 
     def continue_checkout(self):
         self.click(self.CONTINUE_BUTTON)
+        # 等待页面跳转或停留（如果有验证错误）
+        import time
+        time.sleep(0.5)  # 给页面响应时间
         return self
 
     def cancel(self):
         self.click(self.CANCEL_BUTTON)
+        # 等待页面跳转
+        import time
+        time.sleep(1)
         return self
 
     def finish(self):
+        # 确保在 step-two 页面
+        self.wait_until_url_contains("checkout-step-two")
         self.click(self.FINISH_BUTTON)
         return self
 

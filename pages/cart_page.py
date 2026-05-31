@@ -16,7 +16,9 @@ class CartPage(BasePage):
         return self
 
     def item_count(self):
-        return len(self.find_all(self.CART_ITEM))
+        """返回购物车中的商品数量，如果购物车为空则返回0"""
+        elements = self.driver.find_elements(*self.CART_ITEM)
+        return len(elements)
 
     def items_have_action_buttons(self):
         return all(item.find_element(By.TAG_NAME, "button").is_displayed() for item in self.find_all(self.CART_ITEM))
