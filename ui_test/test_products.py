@@ -1,5 +1,3 @@
-"""商品功能UI测试模块"""
-
 import allure
 
 from pages.cart_page import CartPage
@@ -11,7 +9,6 @@ from pages.products_page import ProductsPage
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.title("TC_011 商品列表页正常显示所有商品信息")
 def test_商品列表正常显示(logged_in_driver):
-    """验证商品列表页显示所有商品及完整信息"""
     products_page = ProductsPage(logged_in_driver)
 
     with allure.step("获取商品列表"):
@@ -26,7 +23,6 @@ def test_商品列表正常显示(logged_in_driver):
 @allure.severity(allure.severity_level.NORMAL)
 @allure.title("TC_012 按名称A-Z排序")
 def test_排序名称A到Z(logged_in_driver):
-    """按名称A-Z排序，验证排序结果正确"""
     products_page = ProductsPage(logged_in_driver)
 
     with allure.step("选择A-Z排序"):
@@ -42,7 +38,6 @@ def test_排序名称A到Z(logged_in_driver):
 @allure.severity(allure.severity_level.NORMAL)
 @allure.title("TC_013 按名称Z-A排序")
 def test_排序名称Z到A(logged_in_driver):
-    """按名称Z-A排序，验证排序结果正确"""
     products_page = ProductsPage(logged_in_driver)
 
     with allure.step("选择Z-A排序"):
@@ -58,7 +53,6 @@ def test_排序名称Z到A(logged_in_driver):
 @allure.severity(allure.severity_level.NORMAL)
 @allure.title("TC_014 按价格从低到高排序")
 def test_排序价格从低到高(logged_in_driver):
-    """按价格从低到高排序，验证排序结果正确"""
     products_page = ProductsPage(logged_in_driver)
 
     with allure.step("选择价格从低到高排序"):
@@ -74,7 +68,6 @@ def test_排序价格从低到高(logged_in_driver):
 @allure.severity(allure.severity_level.NORMAL)
 @allure.title("TC_015 按价格从高到低排序")
 def test_排序价格从高到低(logged_in_driver):
-    """按价格从高到低排序，验证排序结果正确"""
     products_page = ProductsPage(logged_in_driver)
 
     with allure.step("选择价格从高到低排序"):
@@ -90,7 +83,6 @@ def test_排序价格从高到低(logged_in_driver):
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.title("TC_016 点击购物车显示已加入的商品")
 def test_购物车显示商品(logged_in_driver):
-    """加入商品后点击购物车，验证商品显示"""
     products_page = ProductsPage(logged_in_driver)
 
     with allure.step("加入商品并进入购物车"):
@@ -107,7 +99,6 @@ def test_购物车显示商品(logged_in_driver):
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.title("TC_017 点击remove移除商品购物车角标减1")
 def test_移除购物车商品(logged_in_driver):
-    """在购物车中移除商品，验证角标更新"""
     products_page = ProductsPage(logged_in_driver)
 
     with allure.step("加入商品并进入购物车"):
@@ -118,9 +109,11 @@ def test_移除购物车商品(logged_in_driver):
         cart_page.wait_loaded().remove_backpack()
 
     with allure.step("验证购物车中商品已移除"):
+        # 在购物车页面验证商品数量
         assert cart_page.item_count() == 0, "购物车应该为空"
 
     with allure.step("返回商品列表验证角标消失"):
+        # 返回商品列表页面检查角标
         logged_in_driver.get(logged_in_driver.current_url.replace("cart.html", "inventory.html"))
         products_page.wait_loaded()
         assert products_page.cart_badge_count() == 0, "购物车角标应该消失"
@@ -131,7 +124,6 @@ def test_移除购物车商品(logged_in_driver):
 @allure.severity(allure.severity_level.NORMAL)
 @allure.title("TC_018 点击商品跳转到详情页")
 def test_点击商品进入详情页(logged_in_driver):
-    """点击商品名称跳转到商品详情页"""
     products_page = ProductsPage(logged_in_driver)
 
     with allure.step("点击商品名称"):
@@ -147,7 +139,6 @@ def test_点击商品进入详情页(logged_in_driver):
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.title("TC_019 加入购物车后角标显示数字1")
 def test_加入购物车角标显示(logged_in_driver):
-    """点击加入购物车按钮，验证角标显示数字1"""
     products_page = ProductsPage(logged_in_driver)
 
     with allure.step("点击加入购物车按钮"):
