@@ -66,12 +66,29 @@ def driver():
     options = Options()
     options.add_experimental_option("prefs", {
         "credentials_enable_service": False,
-        "profile.password_manager_enabled": False
+        "profile.password_manager_enabled": False,
+        "profile.default_content_setting_values.notifications": 2,
+        "profile.default_content_setting_values.popups": 0,
+        "translate.enabled": False,
+        "safebrowsing.enabled": True,
     })
+    options.add_experimental_option("excludeSwitches", ["enable-automation", "enable-logging"])
+    options.add_experimental_option("useAutomationExtension", False)
     if HEADLESS:
         options.add_argument("--headless=new")
+    options.add_argument("--window-size=1920,1080")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--disable-gpu")
+    options.add_argument("--disable-notifications")
+    options.add_argument("--disable-popup-blocking")
+    options.add_argument("--no-first-run")
+    options.add_argument("--no-default-browser-check")
+    options.add_argument("--disable-extensions")
+    options.add_argument(
+        "--disable-features=Translate,PasswordLeakDetection,AutofillServerCommunication,"
+        "OptimizationHints,MediaRouter"
+    )
 
     try:
         if CHROME_DRIVER_PATH:

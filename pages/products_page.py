@@ -57,7 +57,11 @@ class ProductsPage(BasePage):
         return self
 
     def open_cart(self):
-        self.click(self.CART_LINK)
+        cart_url = self.find(self.CART_LINK).get_attribute("href")
+        if cart_url:
+            self.driver.get(cart_url)
+        else:
+            self.js_click(self.CART_LINK)
         self.wait_until_url_contains("cart")
         return self
 

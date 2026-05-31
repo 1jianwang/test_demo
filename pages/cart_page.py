@@ -4,13 +4,15 @@ from pages.base_page import BasePage
 
 
 class CartPage(BasePage):
-    CART_LIST = (By.CLASS_NAME, "cart_list")
+    CART_LIST = (By.CSS_SELECTOR, "[data-test='cart-list'], .cart_list")
     CART_ITEM = (By.CLASS_NAME, "cart_item")
     CHECKOUT_BUTTON = (By.ID, "checkout")
     REMOVE_BACKPACK_BUTTON = (By.ID, "remove-sauce-labs-backpack")
 
     def wait_loaded(self):
+        self.wait_until_url_contains("cart")
         self.find(self.CART_LIST)
+        self.find(self.CHECKOUT_BUTTON)
         return self
 
     def item_count(self):
@@ -24,6 +26,6 @@ class CartPage(BasePage):
         return self
 
     def checkout(self):
-        self.click(self.CHECKOUT_BUTTON)
+        self.js_click(self.CHECKOUT_BUTTON)
         self.wait_until_url_contains("checkout-step-one")
         return self
