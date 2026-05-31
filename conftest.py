@@ -68,7 +68,7 @@ def driver():
         "credentials_enable_service": False,
         "profile.password_manager_enabled": False,
         "profile.default_content_setting_values.notifications": 2,
-        "profile.default_content_setting_values.popups": 0,
+        "profile.default_content_setting_values.popups": 2,
         "translate.enabled": False,
         "safebrowsing.enabled": True,
     })
@@ -81,7 +81,6 @@ def driver():
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-gpu")
     options.add_argument("--disable-notifications")
-    options.add_argument("--disable-popup-blocking")
     options.add_argument("--no-first-run")
     options.add_argument("--no-default-browser-check")
     options.add_argument("--disable-extensions")
