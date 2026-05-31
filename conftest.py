@@ -220,7 +220,8 @@ def driver():
         "profile.default_content_setting_values.notifications": 2,  # 禁用通知
         "profile.default_content_setting_values.popups": 2,  # 禁用弹窗
         "translate.enabled": False,  # 禁用翻译
-        "safebrowsing.enabled": True,  # 启用安全浏览
+        "safebrowsing.enabled": False,  # 禁用安全浏览（避免密码泄露警告）
+        "profile.password_manager_leak_detection": False,  # 禁用密码泄露检测
     })
 
     # 排除自动化标志

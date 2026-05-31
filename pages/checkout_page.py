@@ -92,13 +92,16 @@ class CheckoutPage(BasePage):
             self: 支持链式调用
 
         Note:
-            会先等待进入checkout-step-two页面，再点击Finish按钮
+            会先等待进入checkout-step-two页面，再点击Finish按钮，
+            最后等待完成页面的URL和标题元素出现
         """
         # 等待进入 step-two 页面
-        import time
-        time.sleep(1)  # 给页面跳转时间
         self.wait_until_url_contains("checkout-step-two")
         self.click(self.FINISH_BUTTON)
+        # 等待跳转到完成页面
+        self.wait_until_url_contains("checkout-complete")
+        # 等待完成页面的标题元素出现
+        self.find(self.COMPLETE_HEADER)
         return self
 
     def error_message(self):
