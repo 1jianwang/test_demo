@@ -32,7 +32,8 @@ class BasePage:
         element = self.wait.until(EC.visibility_of_element_located(locator))
         if clear:
             element.clear()
-        element.send_keys(text)
+        if text:  # 只有当 text 不为空时才输入
+            element.send_keys(text)
         return self
 
     def text_of(self, locator):
