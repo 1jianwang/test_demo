@@ -70,13 +70,16 @@ class ProductsPage(BasePage):
 
     def cart_badge_count(self):
         """返回购物车角标上的数字，如果角标不存在则返回 0"""
+        import time
+        time.sleep(0.5)  # 等待 DOM 更新
         elements = self.driver.find_elements(*self.CART_BADGE)
-        if elements:
-            try:
-                return int(elements[0].text)
-            except (ValueError, AttributeError):
-                return 0
-        return 0
+        if not elements:
+            return 0
+        try:
+            badge_text = elements[0].text.strip()
+            return int(badge_text) if badge_text else 0
+        except (ValueError, AttributeError):
+            return 0
 
     def open_first_product_detail(self):
         self.click(self.ITEM_NAME)

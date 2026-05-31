@@ -23,6 +23,10 @@ class CartPage(BasePage):
 
     def remove_backpack(self):
         self.click(self.REMOVE_BACKPACK_BUTTON)
+        # 等待购物车角标更新或消失
+        from selenium.webdriver.common.by import By
+        import time
+        time.sleep(0.5)  # 给 DOM 更新时间
         return self
 
     def checkout(self):
