@@ -134,8 +134,11 @@ class ProductsPage(BasePage):
             self: 支持链式调用
 
         Note:
-            优先使用href跳转，失败则使用JS点击
+            先等待购物车徽章加载（确保添加商品操作完成），
+            然后优先使用href跳转，失败则使用JS点击
         """
+        # 等待购物车徽章出现，确保页面状态稳定
+        self.find(self.CART_BADGE)
         cart_url = self.find(self.CART_LINK).get_attribute("href")
         if cart_url:
             self.driver.get(cart_url)

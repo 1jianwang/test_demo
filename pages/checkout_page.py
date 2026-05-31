@@ -78,12 +78,10 @@ class CheckoutPage(BasePage):
             self: 支持链式调用
 
         Note:
-            点击后会等待1秒，确保页面跳转完成
+            使用JS点击并等待页面跳转到cart页面
         """
-        self.click(self.CANCEL_BUTTON)
-        # 等待页面跳转
-        import time
-        time.sleep(1)
+        self.js_click(self.CANCEL_BUTTON)
+        self.wait_until_url_contains("cart")
         return self
 
     def finish(self):
@@ -94,9 +92,11 @@ class CheckoutPage(BasePage):
             self: 支持链式调用
 
         Note:
-            会先确认当前在checkout-step-two页面，再点击Finish按钮
+            会先等待进入checkout-step-two页面，再点击Finish按钮
         """
-        # 确保在 step-two 页面
+        # 等待进入 step-two 页面
+        import time
+        time.sleep(1)  # 给页面跳转时间
         self.wait_until_url_contains("checkout-step-two")
         self.click(self.FINISH_BUTTON)
         return self
