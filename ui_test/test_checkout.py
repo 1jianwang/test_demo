@@ -1,3 +1,5 @@
+"""结算功能UI测试模块"""
+
 import allure
 
 from pages.checkout_page import CheckoutPage
@@ -8,6 +10,7 @@ from pages.checkout_page import CheckoutPage
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.title("TC_020 正常下单全流程")
 def test_正常下单(checkout_driver):
+    """完整的下单流程：填写信息 -> 确认订单 -> 提交成功"""
     checkout_page = CheckoutPage(checkout_driver)
 
     with allure.step("填写收货信息"):
@@ -28,6 +31,7 @@ def test_正常下单(checkout_driver):
 @allure.severity(allure.severity_level.NORMAL)
 @allure.title("TC_021 全部为空点击Continue")
 def test_全部为空(checkout_driver):
+    """所有字段为空时提示名字必填"""
     checkout_page = CheckoutPage(checkout_driver)
 
     with allure.step("不填写任何信息直接点击Continue"):
@@ -42,6 +46,7 @@ def test_全部为空(checkout_driver):
 @allure.severity(allure.severity_level.NORMAL)
 @allure.title("TC_022 名字为空")
 def test_名字为空(checkout_driver):
+    """名字为空时提示名字必填"""
     checkout_page = CheckoutPage(checkout_driver)
 
     with allure.step("只填写姓氏和邮编"):
@@ -56,6 +61,7 @@ def test_名字为空(checkout_driver):
 @allure.severity(allure.severity_level.NORMAL)
 @allure.title("TC_023 姓氏为空")
 def test_姓氏为空(checkout_driver):
+    """姓氏为空时提示姓氏必填"""
     checkout_page = CheckoutPage(checkout_driver)
 
     with allure.step("只填写名字和邮编"):
@@ -70,6 +76,7 @@ def test_姓氏为空(checkout_driver):
 @allure.severity(allure.severity_level.NORMAL)
 @allure.title("TC_024 邮编为空")
 def test_邮编为空(checkout_driver):
+    """邮编为空时提示邮编必填"""
     checkout_page = CheckoutPage(checkout_driver)
 
     with allure.step("只填写名字和姓氏"):
@@ -84,14 +91,13 @@ def test_邮编为空(checkout_driver):
 @allure.severity(allure.severity_level.MINOR)
 @allure.title("TC_026 邮编填字母-验证系统是否校验格式")
 def test_邮编填字母(checkout_driver):
+    """输入字母邮编，验证系统是否进行格式校验"""
     checkout_page = CheckoutPage(checkout_driver)
 
     with allure.step("输入字母邮编"):
         checkout_page.fill_customer_info("John", "Doe", "abcde").continue_checkout()
 
     with allure.step("验证系统行为"):
-        # 实际上系统允许字母邮编，会进入step-two
-        # 如果系统有验证，会停留在step-one并显示错误
         current_url = checkout_driver.current_url
         if "checkout-step-two" in current_url:
             # 系统未校验格式（Bug）
@@ -106,12 +112,12 @@ def test_邮编填字母(checkout_driver):
 @allure.severity(allure.severity_level.MINOR)
 @allure.title("TC_027 点击Cancel返回购物车")
 def test_取消下单(checkout_driver):
+    """点击Cancel按钮返回购物车页面"""
     checkout_page = CheckoutPage(checkout_driver)
 
     with allure.step("点击Cancel按钮"):
         checkout_page.cancel()
 
     with allure.step("验证返回购物车页面"):
-        # Cancel 按钮从 checkout-step-one 返回 cart 页面
         current_url = checkout_driver.current_url
         assert "cart" in current_url, f"期望返回cart页面，实际URL: {current_url}"

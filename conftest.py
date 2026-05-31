@@ -1,3 +1,5 @@
+"""Pytest全局配置文件，提供测试fixture和钩子函数"""
+
 import os
 import platform
 
@@ -22,14 +24,17 @@ BASE_UI_URL = os.getenv("BASE_UI_URL", "https://www.saucedemo.com")
 HEADLESS = os.getenv("HEADLESS", "true").lower() in {"1", "true", "yes"}
 CHROME_DRIVER_PATH = os.getenv("CHROME_DRIVER_PATH")
 
-
 class ApiSession(requests.Session):
+    """自定义API会话类，自动设置超时和重试机制"""
+
     def request(self, method, url, **kwargs):
+        """为所有请求添加默认超时"""
         kwargs.setdefault("timeout", 10)
         return super().request(method, url, **kwargs)
 
 
 def pytest_configure(config):
+    """创建Allure报告目录并生成环境配置文件"""
     os.makedirs("allure-results", exist_ok=True)
     with open("allure-results/environment.properties", "w", encoding="utf-8") as f:
         f.write(f"Browser=Chrome\n")
@@ -41,11 +46,40 @@ def pytest_configure(config):
         f.write(f"Python.Version={platform.python_version()}\n")
 
 
+@pytest.hookimpl(tryfirst=True, hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    """测试失败时自动截图并附加到Allure报告"""
+    outcome = yield
+    report = outcome.get_result()
+
+    if report.when == "call" and report.failed:
+        driver_fixture = None
+
+        if "driver" in item.funcargs:
+            driver_fixture = item.funcargs["driver"]
+        elif "logged_in_driver" in item.funcargs:
+            driver_fixture = item.funcargs["logged_in_driver"]
+        elif "checkout_driver" in item.funcargs:
+            driver_fixture = item.funcargs["checkout_driver"]
+
+        if driver_fixture:
+            try:
+                allure.attach(
+                    driver_fixture.get_screenshot_as_png(),
+                    name="failure_screenshot",
+                    attachment_type=allure.attachment_type.PNG
+                )
+            except Exception:
+                pass
+
+
 @pytest.fixture
 def api():
+    """提供带重试机制的API测试会话"""
     session = ApiSession()
     session.headers.update({"Content-Type": "application/json"})
     session.base_url = BASE_API_URL
+
     retry = Retry(
         total=3,
         connect=3,
@@ -57,13 +91,16 @@ def api():
     adapter = HTTPAdapter(max_retries=retry)
     session.mount("http://", adapter)
     session.mount("https://", adapter)
+
     yield session
     session.close()
 
 
 @pytest.fixture
 def driver():
+    """提供配置好的Chrome浏览器实例"""
     options = Options()
+
     options.add_experimental_option("prefs", {
         "credentials_enable_service": False,
         "profile.password_manager_enabled": False,
@@ -72,10 +109,13 @@ def driver():
         "translate.enabled": False,
         "safebrowsing.enabled": True,
     })
+
     options.add_experimental_option("excludeSwitches", ["enable-automation", "enable-logging"])
     options.add_experimental_option("useAutomationExtension", False)
+
     if HEADLESS:
         options.add_argument("--headless=new")
+
     options.add_argument("--window-size=1920,1080")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
@@ -104,38 +144,15 @@ def driver():
 
 @pytest.fixture
 def logged_in_driver(driver):
+    """提供已登录的浏览器实例"""
     LoginPage(driver).login("standard_user", "secret_sauce")
     ProductsPage(driver).wait_loaded()
     yield driver
 
 
-@pytest.hookimpl(tryfirst=True, hookwrapper=True)
-def pytest_runtest_makereport(item, call):
-    outcome = yield
-    report = outcome.get_result()
-
-    if report.when == "call" and report.failed:
-        driver_fixture = None
-        if "driver" in item.funcargs:
-            driver_fixture = item.funcargs["driver"]
-        elif "logged_in_driver" in item.funcargs:
-            driver_fixture = item.funcargs["logged_in_driver"]
-        elif "checkout_driver" in item.funcargs:
-            driver_fixture = item.funcargs["checkout_driver"]
-
-        if driver_fixture:
-            try:
-                allure.attach(
-                    driver_fixture.get_screenshot_as_png(),
-                    name="failure_screenshot",
-                    attachment_type=allure.attachment_type.PNG
-                )
-            except Exception:
-                pass
-
-
 @pytest.fixture
 def checkout_driver(logged_in_driver):
+    """提供已进入结算页面的浏览器实例"""
     ProductsPage(logged_in_driver).add_backpack_to_cart().open_cart()
     CartPage(logged_in_driver).wait_loaded().checkout()
     CheckoutPage(logged_in_driver).wait_loaded()
