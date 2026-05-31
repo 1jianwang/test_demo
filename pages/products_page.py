@@ -49,7 +49,9 @@ class ProductsPage(BasePage):
 
     def add_backpack_to_cart(self):
         self.click(self.BACKPACK_ADD_BUTTON)
-        self.find(self.CART_BADGE)
+        # 等待购物车角标出现（DOM更新需要时间）
+        import time
+        time.sleep(0.5)
         return self
 
     def remove_backpack_from_cart(self):
