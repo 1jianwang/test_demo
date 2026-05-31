@@ -14,6 +14,7 @@ class CheckoutPage(BasePage):
     COMPLETE_HEADER = (By.CLASS_NAME, "complete-header")
 
     def wait_loaded(self):
+        self.wait_until_url_contains("checkout-step-one")
         self.find(self.FIRST_NAME_INPUT)
         return self
 

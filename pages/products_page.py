@@ -49,6 +49,7 @@ class ProductsPage(BasePage):
 
     def add_backpack_to_cart(self):
         self.click(self.BACKPACK_ADD_BUTTON)
+        self.find(self.CART_BADGE)
         return self
 
     def remove_backpack_from_cart(self):
@@ -57,6 +58,7 @@ class ProductsPage(BasePage):
 
     def open_cart(self):
         self.click(self.CART_LINK)
+        self.wait_until_url_contains("cart")
         return self
 
     def cart_badge_text(self):

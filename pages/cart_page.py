@@ -25,4 +25,5 @@ class CartPage(BasePage):
 
     def checkout(self):
         self.click(self.CHECKOUT_BUTTON)
+        self.wait_until_url_contains("checkout-step-one")
         return self
